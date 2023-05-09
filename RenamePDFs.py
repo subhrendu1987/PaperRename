@@ -1,4 +1,5 @@
 from pypdf import PdfReader
+from pathvalidate import sanitize_filepath
 import os, sys, argparse
 TARGET_DIR="KeepPDFhere"
 #############################################################################
@@ -25,15 +26,19 @@ def parse_args():
 args=parse_args()
 #############################################################################
 def checkValid(title):
-	return(True)
+	fpath = "%s.pdf"%(title)
+	print("{} -> {}".format(fpath, sanitize_filepath(fpath)))
+	return(sanitize_filepath(fpath))
 #############################################################################
 def renameFile(src,dst):
 	print(src,"--->",dst)
 #############################################################################
 def getTitle(page):
 	text = page.extract_text().split("\n")
-	text1=[t for i,t in enumerate(text) if(t.isprintable())]
-		print("[ %d ]"%i,t.isprintable(),t)
+	text_dict={i:t for i,t in enumerate(text) if(t.isprintable())}
+	key=list(text_dict.keys())[0]
+	title=text_dict[key]
+	return(title)
 #############################################################################
 ''' STUB
 args.ieee=True
