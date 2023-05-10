@@ -1,6 +1,10 @@
+#!/usr/bin/python3
+import os, sys, argparse, subprocess
+from colorama import Fore, Back, Style
+import pdftitle
 from pypdf import PdfReader
 from pathvalidate import sanitize_filepath
-import os, sys, argparse
+import unidecode
 TARGET_DIR="KeepPDFhere"
 #############################################################################
 def parse_args():
@@ -25,20 +29,21 @@ def parse_args():
 #############################################################################
 args=parse_args()
 #############################################################################
-def checkValid(title):
-	fpath = "%s.pdf"%(title)
-	print("{} -> {}".format(fpath, sanitize_filepath(fpath)))
-	return(sanitize_filepath(fpath))
+def getValidFileName(title):
+    fpath = "%s.pdf"%(title)
+    #print("{} -> {}".format(fpath, sanitize_filepath(fpath)))
+    return(sanitize_filepath(fpath))
 #############################################################################
 def renameFile(src,dst):
-	print(src,"--->",dst)
+    print(src,"--->",dst)
+    os.rename(src, dst)
 #############################################################################
 def getTitle(page):
-	text = page.extract_text().split("\n")
-	text_dict={i:t for i,t in enumerate(text) if(t.isprintable())}
-	key=list(text_dict.keys())[0]
-	title=text_dict[key]
-	return(title)
+    text = page.extract_text().split("\n")
+    text_dict={i:t for i,t in enumerate(text) if(t.isprintable())}
+    key=list(text_dict.keys())[0]
+    title=text_dict[key]
+    return(None)
 #############################################################################
 ''' STUB
 args.ieee=True
@@ -46,14 +51,25 @@ args.acm=True
 args.springer=True
 '''
 #############################################################################
+listoffiles=[file for file in os.listdir(TARGET_DIR)]
 for file in os.listdir(TARGET_DIR):
     if file.endswith(".pdf"):
         PATH=os.path.join(TARGET_DIR, file)
-        reader = PdfReader(PATH)
-        number_of_pages = len(reader.pages)
-        print(PATH," having ",number_of_pages, " pages")
-        page = reader.pages[0]
-        title=getTitle(page)
-        if(checkValid(title)):
-        	renameFile(PATH,TARGET_DIR+"/"+title+".pdf")
+        try:
+            title=pdftitle.get_title_from_file(PATH)
+            new_title=getValidFileName(title)
+            renameFile(PATH,TARGET_DIR+"/"+new_title)
+        except:
+            print(Fore.RED + "Attention: Some issue with file [%s]"%PATH)
+            #print(Back.GREEN + 'and with a green background')
+            #print(Style.DIM + 'and in dim text')
+            print(Style.RESET_ALL)
+            #print('back to normal now')
+            pass
+        #reader = PdfReader(PATH)
+        #number_of_pages = len(reader.pages)
+        #print(PATH," having ",number_of_pages, " pages")
+        #page = reader.pages[0]
+        #title=getTitle(page)
+
 

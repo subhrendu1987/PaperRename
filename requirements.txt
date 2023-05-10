@@ -1,5 +1,4 @@
-PdfReader
+pypdf
 pathvalidate
-os
-sys
 argparse
+unidecode
