@@ -5,7 +5,8 @@ import pdftitle
 from pypdf import PdfReader
 from pathvalidate import sanitize_filepath
 import unidecode
-TARGET_DIR="KeepPDFhere"
+SOURCE_DIR="KeepPDFhere"
+TARGET_DIR="Done"
 #############################################################################
 def parse_args():
     parser = argparse.ArgumentParser(description="Rename PDF papers based on article titles")
@@ -52,9 +53,9 @@ args.springer=True
 '''
 #############################################################################
 listoffiles=[file for file in os.listdir(TARGET_DIR)]
-for file in os.listdir(TARGET_DIR):
+for file in os.listdir(SOURCE_DIR):
     if file.endswith(".pdf"):
-        PATH=os.path.join(TARGET_DIR, file)
+        PATH=os.path.join(SOURCE_DIR, file)
         try:
             title=pdftitle.get_title_from_file(PATH)
             new_title=getValidFileName(title)
