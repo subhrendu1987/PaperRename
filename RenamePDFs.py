@@ -3,7 +3,7 @@ import os, sys, argparse, subprocess
 from colorama import Fore, Back, Style
 import pdftitle
 from pypdf import PdfReader
-from pathvalidate import sanitize_filepath
+from pathvalidate import is_valid_filename, sanitize_filename
 import unidecode
 SOURCE_DIR="KeepPDFhere"
 TARGET_DIR="Done"
@@ -32,12 +32,20 @@ args=parse_args()
 #############################################################################
 def getValidFileName(title):
     fpath = "%s.pdf"%(title)
-    #print("{} -> {}".format(fpath, sanitize_filepath(fpath)))
-    return(sanitize_filepath(fpath))
+    if(is_valid_filename(fpath)):
+        sanitized_fname=fpath
+        print(f"is_valid_filename('{fpath}')")
+    else:
+        sanitized_fname = sanitize_filename(title)
+    print("Valid filename:", sanitized_fname)
+    return(sanitized_fname)
 #############################################################################
 def renameFile(src,dst):
     print(src,"--->",dst)
-    os.rename(src, dst)
+    try:
+        os.rename(src, dst)
+    except:
+        print("Title contains unsupported characters")
 #############################################################################
 def getTitle(page):
     text = page.extract_text().split("\n")
@@ -58,19 +66,18 @@ for file in os.listdir(SOURCE_DIR):
         PATH=os.path.join(SOURCE_DIR, file)
         try:
             title=pdftitle.get_title_from_file(PATH)
-            new_title=getValidFileName(title)
-            renameFile(PATH,TARGET_DIR+"/"+new_title)
         except:
             print(Fore.RED + "Attention: Some issue with file [%s]"%PATH)
             #print(Back.GREEN + 'and with a green background')
             #print(Style.DIM + 'and in dim text')
             print(Style.RESET_ALL)
             #print('back to normal now')
-            pass
-        #reader = PdfReader(PATH)
-        #number_of_pages = len(reader.pages)
-        #print(PATH," having ",number_of_pages, " pages")
-        #page = reader.pages[0]
-        #title=getTitle(page)
+            reader = PdfReader(PATH)
+            #number_of_pages = len(reader.pages)
+            #print(PATH," having ",number_of_pages, " pages")
+            page = reader.pages[0]
+            title=getTitle(page)
+        new_title=getValidFileName(title)
+        renameFile(PATH,TARGET_DIR+"/"+new_title)
 
 
